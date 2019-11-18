@@ -1,0 +1,49 @@
+{
+  "target": "bmv2",
+  "p4info": "build/basic.p4.p4info.txt",
+  "bmv2_json": "build/basic.json",
+  "table_entries": [
+    {
+      "table": "MyEgress.swid",
+      "default_action": true,
+      "action_name": "MyEgress.set_swid",
+      "action_params": {
+         "swid": 3
+       }
+    },
+     {
+      "table": "MyIngress.pp_nport",
+      "match": {
+        "meta.ecmp_select": 0
+      },
+      "action_name": "MyIngress.set_nhop",
+      "action_params": {
+        "nhop_dmac": "00:00:00:00:01:03",
+        "nhop_ipv4": "10.0.4.3",
+        "port" : 2
+      }
+    },
+    {
+      "table": "MyIngress.pp_nport",
+      "match": {
+        "meta.ecmp_select": 2
+      },
+      "action_name": "MyIngress.set_nhop",
+      "action_params": {
+        "nhop_dmac": "00:00:00:00:01:03",
+        "nhop_ipv4": "10.0.4.3",
+        "port" : 2
+      }
+    },
+    {
+      "table": "MyEgress.send_frame",
+      "match": {
+        "standard_metadata.egress_port": 2
+      },
+      "action_name": "MyEgress.rewrite_mac",
+      "action_params": {
+        "smac": "00:00:00:03:04:00"
+      }
+    }
+  ]
+}

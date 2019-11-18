@@ -1,0 +1,140 @@
+
+[2019-10-10 03:34:36.064] /p4.v1.P4Runtime/SetForwardingPipelineConfig
+---
+Message too long (62175 bytes)! Skipping log...
+---
+
+[2019-10-10 03:34:36.075] /p4.v1.P4Runtime/Write
+---
+device_id: 2
+election_id {
+  low: 1
+}
+updates {
+  type: MODIFY
+  entity {
+    table_entry {
+      table_id: 33591643
+      action {
+        action {
+          action_id: 16808262
+          params {
+            param_id: 1
+            value: "\003"
+          }
+        }
+      }
+      is_default_action: true
+    }
+  }
+}
+---
+
+[2019-10-10 03:34:36.081] /p4.v1.P4Runtime/Write
+---
+device_id: 2
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 33598884
+      match {
+        field_id: 1
+        exact {
+          value: "\000\000"
+        }
+      }
+      action {
+        action {
+          action_id: 16826124
+          params {
+            param_id: 2
+            value: "\n\000\004\003"
+          }
+          params {
+            param_id: 3
+            value: "\000\002"
+          }
+          params {
+            param_id: 1
+            value: "\000\000\000\000\001\003"
+          }
+        }
+      }
+    }
+  }
+}
+---
+
+[2019-10-10 03:34:36.086] /p4.v1.P4Runtime/Write
+---
+device_id: 2
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 33598884
+      match {
+        field_id: 1
+        exact {
+          value: "\000\002"
+        }
+      }
+      action {
+        action {
+          action_id: 16826124
+          params {
+            param_id: 2
+            value: "\n\000\004\003"
+          }
+          params {
+            param_id: 3
+            value: "\000\002"
+          }
+          params {
+            param_id: 1
+            value: "\000\000\000\000\001\003"
+          }
+        }
+      }
+    }
+  }
+}
+---
+
+[2019-10-10 03:34:36.096] /p4.v1.P4Runtime/Write
+---
+device_id: 2
+election_id {
+  low: 1
+}
+updates {
+  type: INSERT
+  entity {
+    table_entry {
+      table_id: 33604441
+      match {
+        field_id: 1
+        exact {
+          value: "\000\002"
+        }
+      }
+      action {
+        action {
+          action_id: 16828148
+          params {
+            param_id: 1
+            value: "\000\000\000\003\004\000"
+          }
+        }
+      }
+    }
+  }
+}
+---
