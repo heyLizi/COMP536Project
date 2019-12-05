@@ -127,12 +127,12 @@ control MyIngress(inout headers hdr,
                   inout standard_metadata_t standard_metadata) {
 
     register<bit<32>>(1) heavy_hitter_reg; // port
-    register<bit<32>>(1) hh_count_reg; // count
+    register<bit<64>>(1) hh_count_reg; // count
 
-    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg1;
-    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg2;
-    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg3;
-    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg4;
+    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg1;
+    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg2;
+    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg3;
+    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg4;
 
     action drop() {
         mark_to_drop(standard_metadata);
@@ -173,17 +173,20 @@ control MyIngress(inout headers hdr,
             bit<16> hash_value3;
             bit<16> hash_value4;
 
-            bit<32> count1;
-            bit<32> count2;
-            bit<32> count3;
-            bit<32> count4;
-            bit<32> min_count;
-            bit<32> curr_hh_cnt;
+            bit<64> count1;
+            bit<64> count2;
+            bit<64> count3;
+            bit<64> count4;
+            bit<64> min_count;
+            bit<64> curr_hh_cnt;
+
+            bit<16> hash_base = 0;
+
             // update count min sketch
-            hash(hash_value1, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort}, CMS_TABLE_WIDTH);
-            hash(hash_value2, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr}, CMS_TABLE_WIDTH);
-            hash(hash_value3, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr}, CMS_TABLE_WIDTH);
-            hash(hash_value4, HashAlgorithm.crc16, (bit<16>)0, {hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol}, CMS_TABLE_WIDTH);
+            hash(hash_value1, HashAlgorithm.crc16, hash_base, {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort}, CMS_TABLE_WIDTH);
+            hash(hash_value2, HashAlgorithm.crc16, hash_base, {hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr}, CMS_TABLE_WIDTH);
+            hash(hash_value3, HashAlgorithm.crc16, hash_base, {hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr}, CMS_TABLE_WIDTH);
+            hash(hash_value4, HashAlgorithm.crc16, hash_base, {hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol}, CMS_TABLE_WIDTH);
 
             // read count
             hash_table_reg1.read(count1, (bit<32>)hash_value1);
