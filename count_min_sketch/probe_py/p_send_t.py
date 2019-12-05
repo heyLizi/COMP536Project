@@ -20,7 +20,7 @@ def main():
     pkt = Ether(dst='00:00:00:00:01:02', type=TYPE_PROBE) / \
             Probe(heavyHitter = 0)
     pkt = pkt/' '
-    pkt.show2()
+    # pkt.show2()
     sendp(pkt, iface=iface, verbose=False)
 
 if __name__ == '__main__':

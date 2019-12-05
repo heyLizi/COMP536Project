@@ -59,7 +59,6 @@ header probe_t {
 }
 
 struct metadata {
-   
 }
 
 struct headers {
@@ -127,13 +126,20 @@ control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
 
-    register<bit<32>>(1) heavy_hitter_reg;
+    register<bit<32>>(1) heavy_hitter_reg; // port
+    register<bit<32>>(1) hh_count_reg; // count
+
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg1;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg2;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg3;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg4;
 
     action drop() {
         mark_to_drop(standard_metadata);
     }
     
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
+        // update forward port and ttl
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
         hdr.ethernet.dstAddr = dstAddr;
@@ -154,13 +160,60 @@ control MyIngress(inout headers hdr,
     }
 
     apply {
-        if (hdr.ipv4.isValid()) {
-            ipv4_lpm.apply();
-        } else if (hdr.probe.isValid()) {
+        if (hdr.probe.isValid()) {
             bit<32> heavy_hitter;
             heavy_hitter_reg.read(heavy_hitter, 0);
             hdr.probe.heavyHitter = heavy_hitter;
             standard_metadata.egress_spec = 2;
+        } else if (hdr.ipv4.isValid()) {
+            ipv4_lpm.apply();
+            
+            bit<16> hash_value1;
+            bit<16> hash_value2;
+            bit<16> hash_value3;
+            bit<16> hash_value4;
+
+            bit<32> count1;
+            bit<32> count2;
+            bit<32> count3;
+            bit<32> count4;
+            bit<32> min_count;
+            bit<32> curr_hh_cnt;
+            // update count min sketch
+            hash(hash_value1, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort}, CMS_TABLE_WIDTH);
+            hash(hash_value2, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr}, CMS_TABLE_WIDTH);
+            hash(hash_value3, HashAlgorithm.crc16, (bit<16>)0, {hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr}, CMS_TABLE_WIDTH);
+            hash(hash_value4, HashAlgorithm.crc16, (bit<16>)0, {hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol}, CMS_TABLE_WIDTH);
+
+            // read count
+            hash_table_reg1.read(count1, (bit<32>)hash_value1);
+            hash_table_reg2.read(count2, (bit<32>)hash_value2);
+            hash_table_reg3.read(count3, (bit<32>)hash_value3);
+            hash_table_reg4.read(count4, (bit<32>)hash_value4);
+
+            // update count
+            count1 = count1 + 1;
+            count2 = count2 + 1;
+            count3 = count3 + 1;
+            count4 = count4 + 1;
+
+            // write back
+            hash_table_reg1.write((bit<32>)hash_value1, count1);
+            hash_table_reg2.write((bit<32>)hash_value2, count2);
+            hash_table_reg3.write((bit<32>)hash_value3, count3);
+            hash_table_reg4.write((bit<32>)hash_value4, count4);
+
+            // find min
+            min_count = count1;
+            if (count2 < min_count) min_count = count2;
+            if (count3 < min_count) min_count = count3;
+            if (count4 < min_count) min_count = count4;
+            // update heavy hitter reg
+            hh_count_reg.read(curr_hh_cnt, 0);
+            if (curr_hh_cnt < min_count) {
+                hh_count_reg.write(0, curr_hh_cnt);
+                heavy_hitter_reg.write(0, (bit<32>)hdr.tcp.dstPort);
+            }
         }
     }
 }

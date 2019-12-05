@@ -9,7 +9,8 @@ h2: IP: 10.0.1.2	MAC: 00:00:00:01:02
 st_py: structure test python files  
 probe_py: probe python files  
 
-## test
+## test  
+under count_min_sketch folder  
 1. structure test:  
 make  
 xterm h1 h2  
