@@ -3,6 +3,7 @@
 #include <v1model.p4>
 
 const bit<16> TYPE_IPV4 = 0x800;
+const bit<16> TYPE_PROBE = 0x812;
 const bit<8> TCP_PROTO = 0x06;
 
 const bit<16> CMS_TABLE_NUM = 4;
@@ -53,14 +54,19 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
+header probe_t {
+    bit<32> heavyHitter;
+}
+
 struct metadata {
    
 }
 
 struct headers {
-    ethernet_t       ethernet;
-    ipv4_t           ipv4;
-    tcp_t            tcp;
+    ethernet_t      ethernet;
+    ipv4_t          ipv4;
+    tcp_t           tcp;
+    probe_t         probe;
 }
 
 /*************************************************************************
@@ -80,6 +86,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
             TYPE_IPV4: parse_ipv4;
+            TYPE_PROBE: parse_probe;
             default: accept;
         }
     }
@@ -90,6 +97,11 @@ parser MyParser(packet_in packet,
             TCP_PROTO: parse_tcp;
             default: accept;
         }
+    }
+
+    state parse_probe {
+        packet.extract(hdr.probe);
+        transition accept;
     }
 
     state parse_tcp {
@@ -114,6 +126,8 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
+
+    register<bit<32>>(1) heavy_hitter_reg;
 
     action drop() {
         mark_to_drop(standard_metadata);
@@ -142,6 +156,11 @@ control MyIngress(inout headers hdr,
     apply {
         if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
+        } else if (hdr.probe.isValid()) {
+            bit<32> heavy_hitter;
+            heavy_hitter_reg.read(heavy_hitter, 0);
+            hdr.probe.heavyHitter = heavy_hitter;
+            standard_metadata.egress_spec = 2;
         }
     }
 }
@@ -191,6 +210,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
+        packet.emit(hdr.probe);
     }
 }
 
