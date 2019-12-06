@@ -10,6 +10,7 @@ class CntProbe(Packet):
 		ByteField("protocol", 0),
 		BitField("sport", 0, 16),
 		BitField("dport", 0, 16),
-		BitField("count", 0, 64)
+		BitField("ts", 0, 32),
+		BitField("count", 0, 32)
 	]
 bind_layers(Ether, CntProbe, type=TYPE_CNT_PROBE)

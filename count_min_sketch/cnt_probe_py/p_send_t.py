@@ -18,7 +18,7 @@ def main():
     print "collecting heavy hitter' statistics.."
     iface = 'h1-eth0'
     pkt = Ether(dst='00:00:00:00:01:02', type=TYPE_CNT_PROBE)
-    pkt = pkt / CntProbe(srcAddr="10.0.1.1", dstAddr="10.0.1.2", protocol=0x19, sport=49152, dport=1234)
+    pkt = pkt / CntProbe(srcAddr="10.0.1.1", dstAddr="10.0.1.2", protocol=0x19, sport=49152, dport=1234, ts=2)
     pkt = pkt/' '
     # pkt.show2()
     sendp(pkt, iface=iface, verbose=False)

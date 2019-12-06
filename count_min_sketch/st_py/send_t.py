@@ -33,7 +33,7 @@ def main():
 
     print "sending on interface %s to %s" % (iface, str(addr))
     pkt =  Ether(src=get_if_hwaddr(iface), dst='ff:ff:ff:ff:ff:ff')
-    pkt = pkt /IP(dst=addr) / CMS(dstPort=1234, srcPort=49152, ts=1) / sys.argv[2]
+    pkt = pkt /IP(dst=addr) / CMS(dstPort=1234, srcPort=49152, ts=2) / sys.argv[2]
 
     pkt.show2()
     sendp(pkt, iface=iface, verbose=False)
