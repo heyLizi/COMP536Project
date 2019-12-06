@@ -11,6 +11,10 @@ probe_py: probe python files
 
 ## test  
 under count_min_sketch folder  
+
+time_adaptive = 1  // use time adaptive CMS  
+time_adaptive = 0  // not use time adaptive CMS  
+
 1. structure test:  
 make  
 xterm h1 h2  

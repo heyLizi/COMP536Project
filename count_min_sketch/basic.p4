@@ -10,6 +10,9 @@ const bit<8> PROTO_CMS = 0x19;
 const bit<16> CMS_TABLE_NUM = 4;
 const bit<16> CMS_TABLE_WIDTH = 32;
 
+const bit<1> time_adaptive = 1;
+const bit<64> TIME_PARAM = 1;
+
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
 *************************************************************************/
@@ -17,7 +20,6 @@ const bit<16> CMS_TABLE_WIDTH = 32;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-
 typedef bit<48> time_t;
 
 header ethernet_t {
@@ -214,18 +216,25 @@ control MyIngress(inout headers hdr,
             } else if (hdr.ipv4.isValid()) {
                 ipv4_lpm.apply();
                 bit<64> curr_hh_cnt;
+                bit<64> ft = 1;
+
+                if (time_adaptive == 1) {
+                    // pre-emphasis
+                    ft = (bit<64>)hdr.cms.ts * TIME_PARAM;
+                }
+
                 // update count
-                meta.count1 = meta.count1 + 1;
-                meta.count2 = meta.count2 + 1;
-                meta.count3 = meta.count3 + 1;
-                meta.count4 = meta.count4 + 1;
+                meta.count1 = meta.count1 + ft;
+                meta.count2 = meta.count2 + ft;
+                meta.count3 = meta.count3 + ft;
+                meta.count4 = meta.count4 + ft;
                 // write back
                 hash_table_reg1.write((bit<32>)meta.hash_value1, meta.count1);
                 hash_table_reg2.write((bit<32>)meta.hash_value2, meta.count2);
                 hash_table_reg3.write((bit<32>)meta.hash_value3, meta.count3);
                 hash_table_reg4.write((bit<32>)meta.hash_value4, meta.count4);
                 // update min
-                meta.min_count = meta.min_count + 1;
+                meta.min_count = meta.min_count + ft;
                 // update heavy hitter reg
                 hh_count_reg.read(curr_hh_cnt, 0);
                 if (curr_hh_cnt < meta.min_count) {
