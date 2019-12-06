@@ -11,7 +11,7 @@ const bit<16> CMS_TABLE_NUM = 4;
 const bit<16> CMS_TABLE_WIDTH = 32;
 
 const bit<1> time_adaptive = 1;
-const bit<64> TIME_PARAM = 1;
+const bit<32> TIME_PARAM = 1;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -59,7 +59,8 @@ header cnt_probe_t {
     bit<8> protocol;
     bit<16> sport;
     bit<16> dport;
-    bit<64> count;
+    bit<32> ts;
+    bit<32> count;
 }
 
 
@@ -69,11 +70,11 @@ struct metadata {
     bit<16> hash_value3;
     bit<16> hash_value4;
 
-    bit<64> count1;
-    bit<64> count2;
-    bit<64> count3;
-    bit<64> count4;
-    bit<64> min_count;
+    bit<32> count1;
+    bit<32> count2;
+    bit<32> count3;
+    bit<32> count4;
+    bit<32> min_count;
 }
 
 struct headers {
@@ -149,12 +150,12 @@ control MyIngress(inout headers hdr,
                   inout standard_metadata_t standard_metadata) {
 
     register<bit<32>>(1) heavy_hitter_reg; // port
-    register<bit<64>>(1) hh_count_reg; // count
+    register<bit<32>>(1) hh_count_reg; // count
 
-    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg1;
-    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg2;
-    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg3;
-    register<bit<64>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg4;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg1;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg2;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg3;
+    register<bit<32>>((bit<32>)CMS_TABLE_WIDTH) hash_table_reg4;
 
     action drop() {
         mark_to_drop(standard_metadata);
@@ -194,6 +195,7 @@ control MyIngress(inout headers hdr,
             bit<8> protocol = hdr.ipv4.isValid() ? hdr.ipv4.protocol : hdr.cnt_probe.protocol;
             bit<16> sport = hdr.ipv4.isValid() ? hdr.cms.srcPort : hdr.cnt_probe.sport;
             bit<16> dport = hdr.ipv4.isValid() ? hdr.cms.dstPort : hdr.cnt_probe.dport;
+            bit<32> ts = hdr.ipv4.isValid() ? hdr.cms.ts : hdr.cnt_probe.ts;
 
             hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {srcAddr, dstAddr, protocol, sport, dport}, CMS_TABLE_WIDTH);
             hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {dstAddr, protocol, sport, dport, srcAddr}, CMS_TABLE_WIDTH);
@@ -209,20 +211,16 @@ control MyIngress(inout headers hdr,
             if (meta.count2 < meta.min_count) meta.min_count = meta.count2;
             if (meta.count3 < meta.min_count) meta.min_count = meta.count3;
             if (meta.count4 < meta.min_count) meta.min_count = meta.count4;
+            // calculate ft
+            bit<32> ft = 1;
+            if (time_adaptive == 1) {
+                // pre-emphasis
+                ft = (bit<32>)ts * TIME_PARAM;
+            }
 
-            if (hdr.cnt_probe.isValid()) {
-                standard_metadata.egress_spec = 2;
-                hdr.cnt_probe.count = meta.min_count;
-            } else if (hdr.ipv4.isValid()) {
+            if (hdr.ipv4.isValid()) {
                 ipv4_lpm.apply();
-                bit<64> curr_hh_cnt;
-                bit<64> ft = 1;
-
-                if (time_adaptive == 1) {
-                    // pre-emphasis
-                    ft = (bit<64>)hdr.cms.ts * TIME_PARAM;
-                }
-
+                bit<32> curr_hh_cnt;
                 // update count
                 meta.count1 = meta.count1 + ft;
                 meta.count2 = meta.count2 + ft;
@@ -241,7 +239,143 @@ control MyIngress(inout headers hdr,
                     hh_count_reg.write(0, curr_hh_cnt);
                     heavy_hitter_reg.write(0, (bit<32>)hdr.cms.dstPort);
                 }
-            }
+            } else if (hdr.cnt_probe.isValid()) {
+                standard_metadata.egress_spec = 2;
+                hdr.cnt_probe.count = meta.min_count;
+                // de-emphasis
+                // meta.min_count = meta.min_count / ft;
+                bit<32> quo = 0;
+                bit<32> remainder = 0;
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 31)) >> 31);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 30)) >> 30);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 29)) >> 29);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 28)) >> 28);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 27)) >> 27);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 26)) >> 26);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 25)) >> 25);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 24)) >> 24);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 23)) >> 23);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 22)) >> 22);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 21)) >> 21);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 20)) >> 20);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 19)) >> 19);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 18)) >> 18);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 17)) >> 17);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 16)) >> 16);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 15)) >> 15);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 14)) >> 14);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 13)) >> 13);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 12)) >> 12);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 11)) >> 11);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 10)) >> 10);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 9)) >> 9);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 8)) >> 8);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 7)) >> 7);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 6)) >> 6);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 5)) >> 5);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 4)) >> 4);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 3)) >> 3);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 2)) >> 2);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 1)) >> 1);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+
+                quo = quo << 1; remainder = remainder << 1;
+                remainder = remainder | ((meta.min_count & (1 << 0)) >> 0);
+                if (remainder >= ft) { remainder = remainder - ft; quo = quo | 1;}
+                
+                hdr.cnt_probe.count = quo;
+            } 
         }
     }
 }
