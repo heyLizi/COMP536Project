@@ -23,8 +23,8 @@ xterm h1 h2
 in h2: ./probe_py/p_receive_t.py  
 in h1: ./probe_py/p_send_t.py  
 
-3. cnt probe test
-make 
-xterm h1 h2
-in h2: ./cnt_probe_py/p_receive_t.py  
-in h1: ./cnt_probe_py/p_send_t.py  
+3. cnt probe test  
+make   
+xterm h1 h2  
+in h2: ./cnt_probe_py/p_receive_t.py   
+in h1: ./cnt_probe_py/p_send_t.py    

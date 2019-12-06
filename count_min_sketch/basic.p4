@@ -192,12 +192,18 @@ control MyIngress(inout headers hdr,
             heavy_hitter_reg.read(heavy_hitter, 0);
             hdr.probe.heavyHitter = heavy_hitter;
             standard_metadata.egress_spec = 2;
-        } else if (hdr.cnt_probe.isValid()) {
+        } else if (hdr.cnt_probe.isValid() || hdr.ipv4.isValid()) {
             bit<16> hash_base = 0;
-            hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {hdr.cnt_probe.srcAddr, hdr.cnt_probe.dstAddr, hdr.cnt_probe.protocol, hdr.cnt_probe.sport,hdr.cnt_probe.dport}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {hdr.cnt_probe.dstAddr, hdr.cnt_probe.protocol, hdr.cnt_probe.sport,hdr.cnt_probe.dport, hdr.cnt_probe.srcAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value3, HashAlgorithm.crc16, hash_base, {hdr.cnt_probe.protocol, hdr.cnt_probe.sport,hdr.cnt_probe.dport, hdr.cnt_probe.srcAddr, hdr.cnt_probe.dstAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value4, HashAlgorithm.crc16, hash_base, {hdr.cnt_probe.sport,hdr.cnt_probe.dport, hdr.cnt_probe.srcAddr, hdr.cnt_probe.dstAddr, hdr.cnt_probe.protocol}, CMS_TABLE_WIDTH);
+            bit<32> srcAddr = hdr.ipv4.isValid() ? hdr.ipv4.srcAddr : hdr.cnt_probe.srcAddr;
+            bit<32> dstAddr = hdr.ipv4.isValid() ? hdr.ipv4.dstAddr : hdr.cnt_probe.dstAddr;
+            bit<8> protocol = hdr.ipv4.isValid() ? hdr.ipv4.protocol : hdr.cnt_probe.protocol;
+            bit<16> sport = hdr.ipv4.isValid() ? hdr.tcp.srcPort : hdr.cnt_probe.sport;
+            bit<16> dport = hdr.ipv4.isValid() ? hdr.tcp.dstPort : hdr.cnt_probe.dport;
+
+            hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {srcAddr, dstAddr, protocol, sport, dport}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {dstAddr, protocol, sport, dport, srcAddr}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value3, HashAlgorithm.crc16, hash_base, {protocol, sport, dport, srcAddr, dstAddr}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value4, HashAlgorithm.crc16, hash_base, {sport, dport, srcAddr, dstAddr, protocol}, CMS_TABLE_WIDTH);
             // read count
             hash_table_reg1.read(meta.count1, (bit<32>)meta.hash_value1);
             hash_table_reg2.read(meta.count2, (bit<32>)meta.hash_value2);
@@ -208,47 +214,31 @@ control MyIngress(inout headers hdr,
             if (meta.count2 < meta.min_count) meta.min_count = meta.count2;
             if (meta.count3 < meta.min_count) meta.min_count = meta.count3;
             if (meta.count4 < meta.min_count) meta.min_count = meta.count4;
-            hdr.cnt_probe.count = meta.min_count;
-            standard_metadata.egress_spec = 2;
-        } else if (hdr.ipv4.isValid()) {
-            ipv4_lpm.apply();
-            
-            bit<64> curr_hh_cnt;
-            bit<16> hash_base = 0;
-            // update count min sketch
-            hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {hdr.ipv4.dstAddr, hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value3, HashAlgorithm.crc16, hash_base, {hdr.ipv4.protocol, hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value4, HashAlgorithm.crc16, hash_base, {hdr.tcp.srcPort,hdr.tcp.dstPort, hdr.ipv4.srcAddr, hdr.ipv4.dstAddr, hdr.ipv4.protocol}, CMS_TABLE_WIDTH);
 
-            // read count
-            hash_table_reg1.read(meta.count1, (bit<32>)meta.hash_value1);
-            hash_table_reg2.read(meta.count2, (bit<32>)meta.hash_value2);
-            hash_table_reg3.read(meta.count3, (bit<32>)meta.hash_value3);
-            hash_table_reg4.read(meta.count4, (bit<32>)meta.hash_value4);
-
-            // update count
-            meta.count1 = meta.count1 + 1;
-            meta.count2 = meta.count2 + 1;
-            meta.count3 = meta.count3 + 1;
-            meta.count4 = meta.count4 + 1;
-
-            // write back
-            hash_table_reg1.write((bit<32>)meta.hash_value1, meta.count1);
-            hash_table_reg2.write((bit<32>)meta.hash_value2, meta.count2);
-            hash_table_reg3.write((bit<32>)meta.hash_value3, meta.count3);
-            hash_table_reg4.write((bit<32>)meta.hash_value4, meta.count4);
-
-            // find min
-            meta.min_count = meta.count1;
-            if (meta.count2 < meta.min_count) meta.min_count = meta.count2;
-            if (meta.count3 < meta.min_count) meta.min_count = meta.count3;
-            if (meta.count4 < meta.min_count) meta.min_count = meta.count4;
-            // update heavy hitter reg
-            hh_count_reg.read(curr_hh_cnt, 0);
-            if (curr_hh_cnt < meta.min_count) {
-                hh_count_reg.write(0, curr_hh_cnt);
-                heavy_hitter_reg.write(0, (bit<32>)hdr.tcp.dstPort);
+            if (hdr.cnt_probe.isValid()) {
+                standard_metadata.egress_spec = 2;
+                hdr.cnt_probe.count = meta.min_count;
+            } else if (hdr.ipv4.isValid()) {
+                ipv4_lpm.apply();
+                bit<64> curr_hh_cnt;
+                // update count
+                meta.count1 = meta.count1 + 1;
+                meta.count2 = meta.count2 + 1;
+                meta.count3 = meta.count3 + 1;
+                meta.count4 = meta.count4 + 1;
+                // write back
+                hash_table_reg1.write((bit<32>)meta.hash_value1, meta.count1);
+                hash_table_reg2.write((bit<32>)meta.hash_value2, meta.count2);
+                hash_table_reg3.write((bit<32>)meta.hash_value3, meta.count3);
+                hash_table_reg4.write((bit<32>)meta.hash_value4, meta.count4);
+                // update min
+                meta.min_count = meta.min_count + 1;
+                // update heavy hitter reg
+                hh_count_reg.read(curr_hh_cnt, 0);
+                if (curr_hh_cnt < meta.min_count) {
+                    hh_count_reg.write(0, curr_hh_cnt);
+                    heavy_hitter_reg.write(0, (bit<32>)hdr.tcp.dstPort);
+                }
             }
         }
     }

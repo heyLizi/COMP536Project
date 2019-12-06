@@ -18,9 +18,7 @@ def main():
     print "collecting heavy hitter' statistics.."
     iface = 'h1-eth0'
     pkt = Ether(dst='00:00:00:00:01:02', type=TYPE_PROBE)
-    print sys.getsizeof(pkt)
     pkt = pkt / Probe(heavyHitter = 0)
-    print sys.getsizeof(pkt)
     pkt = pkt/' '
     # pkt.show2()
     sendp(pkt, iface=iface, verbose=False)
