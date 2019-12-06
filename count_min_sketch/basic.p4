@@ -5,10 +5,13 @@
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_PROBE = 0x812;
 const bit<16> TYPE_CNT_PROBE = 0x814;
-const bit<8> TCP_PROTO = 0x06;
+const bit<8> PROTO_CMS = 0x19;
 
 const bit<16> CMS_TABLE_NUM = 4;
 const bit<16> CMS_TABLE_WIDTH = 32;
+
+const bit<1> time_adaptive = 1;
+const bit<64> TIME_PARAM = 1;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -17,7 +20,6 @@ const bit<16> CMS_TABLE_WIDTH = 32;
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-
 typedef bit<48> time_t;
 
 header ethernet_t {
@@ -41,18 +43,10 @@ header ipv4_t {
     ip4Addr_t dstAddr;
 }
 
-header tcp_t {
+header cms_t {
     bit<16> srcPort;
     bit<16> dstPort;
-    bit<32> seqNo;
-    bit<32> ackNo;
-    bit<4>  dataOffset;
-    bit<3>  res;
-    bit<3>  ecn;
-    bit<6>  ctrl;
-    bit<16> window;
-    bit<16> checksum;
-    bit<16> urgentPtr;
+    bit<32> ts;
 }
 
 header probe_t {
@@ -67,6 +61,7 @@ header cnt_probe_t {
     bit<16> dport;
     bit<64> count;
 }
+
 
 struct metadata {
     bit<16> hash_value1;
@@ -84,7 +79,7 @@ struct metadata {
 struct headers {
     ethernet_t      ethernet;
     ipv4_t          ipv4;
-    tcp_t           tcp;
+    cms_t           cms;
     probe_t         probe;
     cnt_probe_t     cnt_probe;
 }
@@ -115,7 +110,7 @@ parser MyParser(packet_in packet,
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
-            TCP_PROTO: parse_tcp;
+            PROTO_CMS: parse_cms;
             default: accept;
         }
     }
@@ -130,8 +125,8 @@ parser MyParser(packet_in packet,
         transition accept;
     }
 
-    state parse_tcp {
-        packet.extract(hdr.tcp);
+    state parse_cms {
+        packet.extract(hdr.cms);
         transition accept;
     }
 }
@@ -197,8 +192,8 @@ control MyIngress(inout headers hdr,
             bit<32> srcAddr = hdr.ipv4.isValid() ? hdr.ipv4.srcAddr : hdr.cnt_probe.srcAddr;
             bit<32> dstAddr = hdr.ipv4.isValid() ? hdr.ipv4.dstAddr : hdr.cnt_probe.dstAddr;
             bit<8> protocol = hdr.ipv4.isValid() ? hdr.ipv4.protocol : hdr.cnt_probe.protocol;
-            bit<16> sport = hdr.ipv4.isValid() ? hdr.tcp.srcPort : hdr.cnt_probe.sport;
-            bit<16> dport = hdr.ipv4.isValid() ? hdr.tcp.dstPort : hdr.cnt_probe.dport;
+            bit<16> sport = hdr.ipv4.isValid() ? hdr.cms.srcPort : hdr.cnt_probe.sport;
+            bit<16> dport = hdr.ipv4.isValid() ? hdr.cms.dstPort : hdr.cnt_probe.dport;
 
             hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {srcAddr, dstAddr, protocol, sport, dport}, CMS_TABLE_WIDTH);
             hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {dstAddr, protocol, sport, dport, srcAddr}, CMS_TABLE_WIDTH);
@@ -221,23 +216,30 @@ control MyIngress(inout headers hdr,
             } else if (hdr.ipv4.isValid()) {
                 ipv4_lpm.apply();
                 bit<64> curr_hh_cnt;
+                bit<64> ft = 1;
+
+                if (time_adaptive == 1) {
+                    // pre-emphasis
+                    ft = (bit<64>)hdr.cms.ts * TIME_PARAM;
+                }
+
                 // update count
-                meta.count1 = meta.count1 + 1;
-                meta.count2 = meta.count2 + 1;
-                meta.count3 = meta.count3 + 1;
-                meta.count4 = meta.count4 + 1;
+                meta.count1 = meta.count1 + ft;
+                meta.count2 = meta.count2 + ft;
+                meta.count3 = meta.count3 + ft;
+                meta.count4 = meta.count4 + ft;
                 // write back
                 hash_table_reg1.write((bit<32>)meta.hash_value1, meta.count1);
                 hash_table_reg2.write((bit<32>)meta.hash_value2, meta.count2);
                 hash_table_reg3.write((bit<32>)meta.hash_value3, meta.count3);
                 hash_table_reg4.write((bit<32>)meta.hash_value4, meta.count4);
                 // update min
-                meta.min_count = meta.min_count + 1;
+                meta.min_count = meta.min_count + ft;
                 // update heavy hitter reg
                 hh_count_reg.read(curr_hh_cnt, 0);
                 if (curr_hh_cnt < meta.min_count) {
                     hh_count_reg.write(0, curr_hh_cnt);
-                    heavy_hitter_reg.write(0, (bit<32>)hdr.tcp.dstPort);
+                    heavy_hitter_reg.write(0, (bit<32>)hdr.cms.dstPort);
                 }
             }
         }
@@ -288,7 +290,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
-        packet.emit(hdr.tcp);
+        packet.emit(hdr.cms);
         packet.emit(hdr.probe);
         packet.emit(hdr.cnt_probe);
     }
