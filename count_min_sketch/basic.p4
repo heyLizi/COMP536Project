@@ -197,10 +197,10 @@ control MyIngress(inout headers hdr,
             bit<16> dport = hdr.ipv4.isValid() ? hdr.cms.dstPort : hdr.cnt_probe.dport;
             bit<32> ts = hdr.ipv4.isValid() ? hdr.cms.ts : hdr.cnt_probe.ts;
 
-            hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {srcAddr, dstAddr, protocol, sport, dport}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {dstAddr, protocol, sport, dport, srcAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value3, HashAlgorithm.crc16, hash_base, {protocol, sport, dport, srcAddr, dstAddr}, CMS_TABLE_WIDTH);
-            hash(meta.hash_value4, HashAlgorithm.crc16, hash_base, {sport, dport, srcAddr, dstAddr, protocol}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value1, HashAlgorithm.crc16, hash_base, {srcAddr, dstAddr, protocol, sport, dport, ts}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value2, HashAlgorithm.crc16, hash_base, {dstAddr, protocol, sport, dport, srcAddr, ts}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value3, HashAlgorithm.crc16, hash_base, {protocol, sport, dport, srcAddr, dstAddr, ts}, CMS_TABLE_WIDTH);
+            hash(meta.hash_value4, HashAlgorithm.crc16, hash_base, {sport, dport, srcAddr, dstAddr, protocol, ts}, CMS_TABLE_WIDTH);
             // read count
             hash_table_reg1.read(meta.count1, (bit<32>)meta.hash_value1);
             hash_table_reg2.read(meta.count2, (bit<32>)meta.hash_value2);
