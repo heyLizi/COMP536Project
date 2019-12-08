@@ -5,10 +5,11 @@ import os
 
 sys.path.append("../cnt_probe_py")
 
+import pandas as pd
+
 from scapy.all import *
 from scapy.layers.inet import _IPOption_HDR
 from cnt_probe_hdr import *
-from pickle_query import *
 
 data = []
 

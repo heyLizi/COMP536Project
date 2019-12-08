@@ -8,9 +8,9 @@ const bit<16> TYPE_CNT_PROBE = 0x814;
 const bit<8> PROTO_CMS = 0x19;
 
 const bit<16> CMS_TABLE_NUM = 4;
-const bit<16> CMS_TABLE_WIDTH = 32;
+const bit<16> CMS_TABLE_WIDTH = 128;
 
-const bit<1> time_adaptive = 1;
+const bit<1> time_adaptive = 0;
 const bit<32> TIME_PARAM = 1;
 
 /*************************************************************************
