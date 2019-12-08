@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import datetime
 
 def pickle_query():
+    '''
+    map first 100 hour query to dport, and pickle it to file
+    '''
     data = {}
     df = pd.read_table("AOL_origin.txt", sep='\t')
     date_2_timestamp = lambda x: datetime.timestamp(datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
@@ -27,6 +30,9 @@ def pickle_query():
         pkl.dump(data, f)
 
 def load_query():
+    '''
+    load map from query to dport
+    '''
     with open("query_2_dport.pkl", "rb") as f:
         data = pkl.load(f)
 

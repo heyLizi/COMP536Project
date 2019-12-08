@@ -461,6 +461,8 @@ fidelity.com,5,554,2
 fidelity.com,5,554,2
 http,25,832,2
 http,25,832,2
+amazon,47,981,2
+amazon,47,981,2
 southwest airlines,52,24,1
 http,52,832,2
 southwest airlines,66,24,1
@@ -468,7 +470,11 @@ maps,71,404,2
 walmart,97,513,1
 ebay,15,395,9
 ebay,17,395,13
+amazon,18,981,1
+amazon,22,981,2
 ebay,23,395,13
+amazon,58,981,1
+amazon,60,981,1
 google,63,840,29
 ebay,90,395,9
 mapquest,23,475,16
@@ -2320,6 +2326,7 @@ yahoo,28,787,7
 mapquest,86,475,12
 expedia,21,902,1
 ebay,89,395,13
+amazon,91,981,1
 southwest airlines,20,24,1
 -,17,642,25
 dictionary,71,488,1
@@ -2852,6 +2859,7 @@ google,26,840,10
 http,12,832,2
 weather,14,808,3
 -,69,642,17
+amazon,15,981,1
 bank of america,18,466,3
 yahoo.com,19,190,15
 yahoo.com,19,190,15
@@ -2988,12 +2996,14 @@ southwest.com,93,945,1
 -,60,642,10
 google,40,840,17
 google.com,22,621,14
+amazon,67,981,7
 fidelity.com,20,554,2
 fidelity.com,36,554,1
 fidelity.com,48,554,1
 fidelity.com,57,554,2
 fidelity.com,57,554,2
 fidelity.com,67,554,2
+amazon,22,981,2
 myspace.com,45,371,6
 map quest,92,442,4
 map quest,92,442,4
@@ -3527,6 +3537,7 @@ google,34,840,11
 google,34,840,11
 google,34,840,11
 google,34,840,11
+amazon,53,981,1
 ebay,80,395,4
 ebay,80,395,4
 yahoo.com,4,190,2
@@ -3718,6 +3729,7 @@ runescape,67,568,4
 runescape,67,568,4
 runescape,68,568,2
 runescape,82,568,1
+amazon,19,981,1
 google,41,840,32
 yahoo,47,787,15
 yahoo,47,787,15
@@ -4020,63 +4032,25 @@ msn.com,66,679,1
 google.com,14,621,2
 myspace.com,66,371,9
 -,8,642,10
-suzuki drz 400s,8,723,1
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,9,723,8
-suzuki drz 400s,10,723,4
-suzuki drz 400s,10,723,4
-suzuki drz 400s,10,723,4
-suzuki drz 400s,10,723,4
 -,24,642,14
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,24,723,7
-suzuki drz 400s,25,723,2
-suzuki drz 400s,25,723,2
 -,35,642,26
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
 -,35,642,26
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,35,723,12
-suzuki drz 400s,36,723,3
-suzuki drz 400s,36,723,3
-suzuki drz 400s,36,723,3
 -,79,642,6
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
-suzuki drz 400s,79,723,8
 yahoo,24,787,14
+amazon,35,981,1
+amazon,46,981,1
 yahoo,65,787,5
+amazon,65,981,3
+amazon,65,981,3
+amazon,65,981,3
 yahoo.com,69,190,9
 yahoo.com,89,190,11
 amazon.com,94,571,3
 amazon.com,94,571,3
 myspace.com,41,371,6
 weather,23,808,3
+amazon,74,981,2
+amazon,74,981,2
 google,19,840,28
 google,19,840,28
 google,19,840,28
@@ -5193,6 +5167,7 @@ yahoo games,83,327,2
 yahoo games,83,327,2
 google,67,840,32
 google,68,840,28
+amazon,69,981,1
 mapquest,71,475,2
 mapquest,89,475,6
 http,83,832,8
@@ -5871,6 +5846,7 @@ google.com,39,621,10
 google.com,39,621,10
 ebay,8,395,3
 ebay,33,395,7
+amazon,37,981,1
 mapquest.com,35,451,1
 -,82,642,16
 weather,31,808,3
@@ -6074,6 +6050,7 @@ horoscope,96,77,4
 -,34,642,10
 -,34,642,10
 bank of america,63,466,2
+amazon,83,981,2
 http,50,832,3
 http,50,832,3
 games.myspace.com,22,800,33
@@ -6563,6 +6540,8 @@ yahoo.com,41,190,3
 google,75,840,7
 google,75,840,7
 google,75,840,7
+amazon,77,981,2
+amazon,77,981,2
 http,82,832,4
 eva longoria,12,124,1
 -,58,642,16
@@ -6591,6 +6570,7 @@ www.myspace.com,77,365,2
 www.myspace.com,77,365,2
 www.myspace.com,94,365,3
 -,20,642,18
+amazon,23,981,1
 google,20,840,30
 ebay,20,395,12
 myspace.com,1,371,4
@@ -7127,6 +7107,7 @@ irs,13,417,1
 ebay.com,62,1000,5
 walmart,33,513,1
 target,33,79,1
+amazon,34,981,1
 amazon.com,41,571,1
 -,94,642,16
 -,10,642,9
@@ -8538,6 +8519,7 @@ google,22,840,39
 -,13,642,12
 internet,24,775,4
 internet,24,775,4
+amazon,45,981,1
 ebay,45,395,10
 mapquest.com,15,451,1
 myspace.com,42,371,8
@@ -9153,6 +9135,7 @@ yahoo.com,80,190,2
 map quest,35,442,3
 map quest,35,442,3
 games.myspace.com,65,800,6
+amazon,27,981,1
 goggle,37,161,8
 -,57,642,11
 -,84,642,14
@@ -9889,6 +9872,7 @@ www.yahoo.com,37,16,3
 myspace.com,60,371,1
 ebay,40,395,9
 american idol,64,223,6
+amazon,48,981,1
 mapquest,84,475,13
 mapquest,84,475,13
 -,40,642,24
@@ -10342,6 +10326,7 @@ mapquest,47,475,5
 pogo.com,34,467,1
 http,61,832,2
 dictionary,39,488,2
+amazon,42,981,1
 map quest,49,442,2
 map quest,49,442,2
 yellow pages,43,185,1
@@ -10856,6 +10841,7 @@ google,76,840,1
 www.ebay.com,46,31,4
 yahoo.com,48,190,4
 yahoo.com,48,190,4
+amazon,81,981,1
 american idol,58,223,2
 internet,85,775,4
 my space,43,120,3
@@ -11190,6 +11176,7 @@ http,87,832,3
 myspace,90,803,7
 myspace,48,803,6
 google,35,840,13
+amazon,63,981,1
 google,41,840,32
 google,88,840,19
 www.yahoo.com,32,16,4
@@ -11481,6 +11468,7 @@ american idol,70,223,4
 google.com,63,621,22
 google.com,63,621,22
 http,60,832,5
+amazon,59,981,1
 my space.com,71,718,2
 myspace,70,803,8
 myspace,70,803,8
@@ -11766,7 +11754,10 @@ www.ebay.com,69,31,3
 google,72,840,15
 google,72,840,15
 yellow pages,58,185,1
+amazon,83,981,2
+amazon,84,981,1
 -,94,642,16
+amazon,62,981,1
 hotmail,57,760,1
 msn,57,382,2
 msn,57,382,2
@@ -11796,6 +11787,9 @@ ebay,69,395,8
 southwest.com,49,945,1
 horoscopes,69,970,2
 ebay,69,395,8
+amazon,70,981,2
+amazon,70,981,2
+amazon,71,981,1
 -,61,642,17
 msn,73,382,2
 msn,73,382,2
@@ -12123,6 +12117,12 @@ myspace.com,69,371,6
 google,73,840,21
 google,74,840,11
 google,74,840,11
+amazon,67,981,7
+amazon,67,981,7
+amazon,67,981,7
+amazon,67,981,7
+amazon,67,981,7
+amazon,67,981,7
 sex,68,35,1
 google,95,840,13
 american idol,59,223,3

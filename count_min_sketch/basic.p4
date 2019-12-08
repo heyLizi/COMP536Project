@@ -10,7 +10,7 @@ const bit<8> PROTO_CMS = 0x19;
 const bit<16> CMS_TABLE_NUM = 4;
 const bit<16> CMS_TABLE_WIDTH = 128;
 
-const bit<1> time_adaptive = 0;
+const bit<1> TIME_ADAPTIVE = 0;
 const bit<32> TIME_PARAM = 1;
 
 /*************************************************************************
@@ -213,7 +213,7 @@ control MyIngress(inout headers hdr,
             if (meta.count4 < meta.min_count) meta.min_count = meta.count4;
             // calculate ft
             bit<32> ft = 1;
-            if (time_adaptive == 1) {
+            if (TIME_ADAPTIVE == 1) {
                 // pre-emphasis
                 ft = (bit<32>)ts * TIME_PARAM;
             }

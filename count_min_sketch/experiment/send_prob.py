@@ -21,6 +21,7 @@ import readline
 
 def main():
     df = pd.read_csv("../../dataset/AOL_100t_top10.csv")
+    df = df.drop_duplicates()
     print("finish loading data")
 
     for i in range(len(df)):

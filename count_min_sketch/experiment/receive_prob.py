@@ -41,6 +41,7 @@ def main():
     sniff(iface = iface,
           prn = lambda x: handle_pkt(x))
     
+    # store prob result to file
     df = pd.DataFrame(data, columns=["dport", "ts", "count"])
     df.to_csv("top10_prob_count.csv", index=None)
 
