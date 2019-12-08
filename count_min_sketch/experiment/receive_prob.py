@@ -27,8 +27,8 @@ def handle_pkt(pkt):
     layers = [l for l in expand(pkt) if l.name == 'cnt_probe']
 
     for info in layers:
-        print("dport: " + str(info.dport))
-        print("count: " + str(info.count))
+        print "dport: " + str(info.dport)
+        print "count: " + str(info.count)
         data.append([info.dport, info.ts, info.count])
         
     sys.stdout.flush()
@@ -36,7 +36,7 @@ def handle_pkt(pkt):
 
 def main():
     iface = "h2-eth0"
-    print("sniffing on %s" % iface)
+    print "sniffing on %s" % iface
     sys.stdout.flush()
     sniff(iface = iface,
           prn = lambda x: handle_pkt(x))

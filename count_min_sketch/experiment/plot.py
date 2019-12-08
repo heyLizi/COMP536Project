@@ -40,10 +40,10 @@ if __name__ == "__main__":
     df_origin = pd.read_csv("../../dataset/AOL_100t_top10.csv")
     df_origin = df_origin.drop_duplicates()
 
-    # ada-cms prob result
+    # read ada-cms prob result file
     df_adcms = pd.read_csv("top10_prob_count_adcms.csv")
 
-    # cms prob result
+    # read cms prob result file
     df_cms = pd.read_csv("top10_prob_count_cms.csv")
 
     # plot graph

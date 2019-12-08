@@ -1,12 +1,13 @@
 import pandas as pd
 from datetime import datetime
+import time
 from pickle_query import load_query
 
 def process(query_2_dport, topk):
     # read original AOL data
-    df_origin = pd.read_table("AOL_origin.txt", sep='\t')
+    df_origin = pd.read_table("user-ct-test-collection-02.txt", sep='\t')
     # convert date to timestamp
-    date_2_timestamp = lambda x: datetime.timestamp(datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
+    date_2_timestamp = lambda x: time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple())
     # discrete timestamp to hour timestamp
     min_timestamp = df_origin["QueryTime"].apply(date_2_timestamp).min()
     df_origin["QueryTime"] = df_origin["QueryTime"].apply(lambda x: (date_2_timestamp(x) - min_timestamp) // 3600 + 1)
