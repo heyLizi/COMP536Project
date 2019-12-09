@@ -16,12 +16,11 @@ from scapy.all import Packet, hexdump
 from scapy.all import Ether, StrFixedLenField, XByteField, IntField
 from scapy.all import bind_layers
 from cnt_probe_hdr import *
-from pickle_query import *
 import readline
 
 
 def main():
-    df = pd.read_csv("../../dataset/Synthetic_top10.csv")
+    df = pd.read_csv("../../dataset/AOL_100t_top10.csv")
     print("finish loading data")
 
     for i in range(len(df)):

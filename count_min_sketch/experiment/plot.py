@@ -1,45 +1,60 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df_origin = pd.read_csv("../../dataset/Synthetic_top10.csv")
 
-df = pd.read_csv("top10_prob_count.csv")
 
-data_origin = {}
-for i in range(len(df_origin)):
-    row = df_origin.iloc[i]
-    dport = row["dport"]
-    ts = row["ts"]
-    count = row["count"]
-    data_origin[dport, ts] = count
+def process(df, df_origin):
+    data_origin = {}
+    for i in range(len(df_origin)):
+        row = df_origin.iloc[i]
+        dport = row["dport"]
+        ts = row["ts"]
+        count = row["count"]
+        data_origin[dport, ts] = count
 
-data = {}
-for i in range(len(df)):
-    row = df.iloc[i]
-    dport = row["dport"]
-    ts = row["ts"]
-    count = row["count"]
-    data[dport, ts] = count
+    data = {}
+    for i in range(len(df)):
+        row = df.iloc[i]
+        dport = row["dport"]
+        ts = row["ts"]
+        count = row["count"]
+        data[dport, ts] = count
 
-ts_2_error = {}
-ts_2_count = {}
-for ((dport, ts), count) in data.items():
-    error = abs(count - data_origin.get((dport, ts)))
-    ts_2_count[ts] = ts_2_count.get(ts, 0) + 1
-    ts_2_error[ts] = ts_2_error.get(ts, 0) + error
+    ts_2_error = {}
+    ts_2_count = {}
+    for ((dport, ts), count) in data.items():
+        error = abs(count - data_origin.get((dport, ts)))
+        ts_2_count[ts] = ts_2_count.get(ts, 0) + 1
+        ts_2_error[ts] = ts_2_error.get(ts, 0) + error
 
-for k in ts_2_error.keys():
-    ts_2_error[k] /= ts_2_count[k]
+    for k in ts_2_error.keys():
+        ts_2_error[k] /= ts_2_count[k]
 
-x = sorted(ts_2_error.keys())
-y = [ts_2_error[i] for i in x]
+    x = sorted(ts_2_error.keys())
+    y = [ts_2_error[i] for i in x]
 
-plt.figure()
-plt.plot(x, y)
-plt.title("Average Absolute Error for Ada-CMS")
-plt.xlabel("Timestamp: hour")
-plt.ylabel("Absolute error")
-plt.savefig("result.png")
+    return (x, y)
+
+if __name__ == "__main__":
+    df_origin = pd.read_csv("../../dataset/AOL_100t_top10.csv")
+    df_adcms = pd.read_csv("top10_prob_count_adcms.csv")
+    df_cms = pd.read_csv("top10_prob_count_cms.csv")
+
+    x_adcms, y_adcms = process(df_adcms, df_origin)
+    x_cms, y_cms = process(df_cms, df_origin)
+
+    ax = plt.subplot()
+    ax.plot(x_adcms, y_adcms, label='ada-cms')
+    ax.plot(x_cms, y_cms, label='cms')
+
+    ax.set_yscale("log", basex=2)
+    ax.legend()
+    ax.grid()
+
+    plt.title("Average Absolute Error for Ada-CMS")
+    plt.xlabel("Timestamp: hour")
+    plt.ylabel("Absolute error")
+    plt.savefig("result.png")
 
 
 
