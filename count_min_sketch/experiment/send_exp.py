@@ -18,7 +18,7 @@ from cms_hdr import *
 def main():
     df = pd.read_csv("../../dataset/AOL_100t_top100.csv")
 
-    print("finish loading query")
+    print "finish loading query"
 
     for i in range(len(df)):
         row = df.iloc[i]
@@ -32,7 +32,7 @@ def main():
         sendp(pkt, iface=iface, verbose=False)
 
         if i % 1000 == 0:
-            print("%d finish" % i)
+            print "%d finish" % i
 
 
 if __name__ == '__main__':

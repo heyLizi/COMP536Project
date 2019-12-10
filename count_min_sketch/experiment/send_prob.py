@@ -21,7 +21,8 @@ import readline
 
 def main():
     df = pd.read_csv("../../dataset/AOL_100t_top10.csv")
-    print("finish loading data")
+    df = df.drop_duplicates()
+    print "finish loading data"
 
     for i in range(len(df)):
         row = df.iloc[i]
@@ -36,7 +37,7 @@ def main():
         sendp(pkt, iface=iface, verbose=False)
 
         if i % 1000 == 0:
-            print("%d finish" % i)
+            print "%d finish" % i
 
 if __name__ == '__main__':
     main()

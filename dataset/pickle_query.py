@@ -1,11 +1,15 @@
 import pickle as pkl
 import pandas as pd
 from datetime import datetime
+import time
 
 def pickle_query():
+    '''
+    map first 100 hour query to dport, and pickle it to file
+    '''
     data = {}
-    df = pd.read_table("AOL_origin.txt", sep='\t')
-    date_2_timestamp = lambda x: datetime.timestamp(datetime.strptime(x, "%Y-%m-%d %H:%M:%S"))
+    df = pd.read_table("user-ct-test-collection-02.txt", sep='\t')
+    date_2_timestamp = lambda x: time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple())
     min_timestamp = df["QueryTime"].apply(date_2_timestamp).min()
 
     df["QueryTime"] = df["QueryTime"].apply(lambda x: (date_2_timestamp(x) - min_timestamp) // 3600 + 1)
@@ -27,6 +31,9 @@ def pickle_query():
         pkl.dump(data, f)
 
 def load_query():
+    '''
+    load map from query to dport
+    '''
     with open("query_2_dport.pkl", "rb") as f:
         data = pkl.load(f)
 
@@ -35,5 +42,5 @@ def load_query():
 if __name__ == "__main__":
     pickle_query()
     data = load_query()
-    print(data)
+    print data
 

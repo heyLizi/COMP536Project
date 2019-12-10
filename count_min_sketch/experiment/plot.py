@@ -36,10 +36,17 @@ def process(df, df_origin):
     return (x, y)
 
 if __name__ == "__main__":
+    # load original count for top10 frequent query
     df_origin = pd.read_csv("../../dataset/AOL_100t_top10.csv")
+    df_origin = df_origin.drop_duplicates()
+
+    # read ada-cms prob result file
     df_adcms = pd.read_csv("top10_prob_count_adcms.csv")
+
+    # read cms prob result file
     df_cms = pd.read_csv("top10_prob_count_cms.csv")
 
+    # plot graph
     x_adcms, y_adcms = process(df_adcms, df_origin)
     x_cms, y_cms = process(df_cms, df_origin)
 
