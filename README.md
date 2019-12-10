@@ -34,8 +34,13 @@ in h2: ./cnt_probe_py/p_receive_t.py
 in h1: ./cnt_probe_py/p_send_t.py    
 
 ## experiment
+Pandas is needed in the experiment, run 
+```
+pip install pandas
+```
+before running thisexperiment.
 
-### Dataset preprocess
+### dataset preprocess
 In our experiment, we use AOL dataset that collects user's url click records to test our CMS and Ada-CMS algorithm. Since the AOL datset is very large, we only use first 100 hours data and top 100 frequent query.
 
 In preprocess, we will filter out first 100 hours and top100 frequent queries and also map query to TCP's dport. (We can't directly use string query)
@@ -43,17 +48,17 @@ In preprocess, we will filter out first 100 hours and top100 frequent queries an
 
 2. Under `dataset` directory, run 
     ```
-    python3 pickle_query.py
+    python pickle_query.py
     ``` 
     before running `preprocess.py` file if pickle file `query_2_dport.pkl` doesn't exist.
 
 3. Under `dataset` directory, run 
     ```
-    python3 preprocess.py
+    python preprocess.py
     ```
     if file `AOL_100t_top10.csv` and `AOL_100t_top100.csv` don't exist.
 
-### Experiment
+### experiment traffic
 Under `count_min_sketch/experiment` directory.
 
 1. Adjust parameters you want to experiment.
@@ -75,17 +80,18 @@ Under `count_min_sketch/experiment` directory.
 3. Send experiment traffic(top100 heavy query) data.
     ```
     //in h1
-    python3 send_exp.py
+    python send_exp.py
     ```
 
 4. Send & Receive prob(top10 heavy) data.
     ```
     //in h2
-    python3 receive_prob.py
+    python receive_prob.py
 
     //in h1
-    python3 send_prob.py
+    python send_prob.py
     ```
     When colsing h2, prob result will be written to file `top10_prob_count.csv`
 
 ### Plot result
+Under `experiment`, see `plot.py` as template to plot comparision result. You need to run experiment with `TIME_ADAPTIVE=1` and `TIME_ADAPTIVE=0` both to generate CMS result and Ada-CMS result before ploting.
